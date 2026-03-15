@@ -12,6 +12,7 @@ import { env } from "./config/env.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec, swaggerUiOptions } from "./lib/swagger.js";
 import { userRouter } from "./routes/user.route.js";
+import vehicleRouter from "./routes/vehicle.route.js";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.get("/", (_req, res) => {
 app.use("/health", healthRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/auth", userRouter);
+app.use("/api/vehicle",vehicleRouter)
 
 // API Documentation
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));

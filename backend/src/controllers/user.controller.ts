@@ -8,7 +8,7 @@ import { z } from "zod";
 import { omit } from "../lib/utiities";
 
 export const UserLoginSchema = z.object({
-    email: z.string().email(),
+    email: z.email(),
     password: z.string().min(1),
 });
 
