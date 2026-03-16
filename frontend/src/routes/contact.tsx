@@ -29,7 +29,7 @@ const TEAM = [
     name: 'Sulav Paudel',
     role: 'Web Developer',
     image: 'https://ik.imagekit.io/vsthqhvci/headshots/Messenger_creation_14C89AD1-8362-49D9-9ABC-C1D1BD84A028.jpeg',
-    github: 'https://github.com/sulavpoudel',
+    github: 'https://github.com/Sulav18',
   },
 ]
 
