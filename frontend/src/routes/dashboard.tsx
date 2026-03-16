@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useCallback, useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -11,42 +12,73 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  getDashboardStats,
-  getCurrentlyParkedVehicles,
-  getRecentVehicles,
-  registerVehicleEntry,
-  processVehicleExit,
-  type VehicleRow,
-} from '@/data/parking'
+  createVehicleEntry,
+  exitVehicle,
+  fetchVehicles,
+  type Vehicle,
+} from '@/lib/api/vehicle'
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
 })
 
 function DashboardPage() {
-  const [stats, setStats] = useState<{
-    carsParked: number
-    remainingPlaces: number
-    totalEarnings: string
-  } | null>(null)
-  const [parked, setParked] = useState<VehicleRow[]>([])
-  const [recent, setRecent] = useState<VehicleRow[]>([])
-  const [entryLoading, setEntryLoading] = useState(false)
+  const queryClient = useQueryClient()
+
+  const { data: vehicles = [], isLoading } = useQuery({
+    queryKey: ['vehicles'],
+    queryFn: fetchVehicles,
+  })
+
   const [entryError, setEntryError] = useState('')
-  const [exitPlate, setExitPlate] = useState('')
-  const [exitLoading, setExitLoading] = useState(false)
   const [exitError, setExitError] = useState('')
   const [exitSuccess, setExitSuccess] = useState<string | null>(null)
 
-  const refresh = useCallback(() => {
-    getDashboardStats().then(setStats).catch(() => setStats(null))
-    getCurrentlyParkedVehicles().then(setParked).catch(() => setParked([]))
-    getRecentVehicles().then(setRecent).catch(() => setRecent([]))
-  }, [])
+  const stats = useMemo(() => {
+    const capacity = 50
+    const carsParked = vehicles.filter((v) => !v.exitTime).length
+    const totalEarnings = vehicles
+      .filter((v) => v.exitTime)
+      .reduce(
+        (sum, v) => sum + (Number(v.totalAmount ?? 0) || 0),
+        0,
+      )
+      .toFixed(2)
+    const remainingPlaces = Math.max(0, capacity - carsParked)
+    return { carsParked, remainingPlaces, totalEarnings }
+  }, [vehicles])
 
-  useEffect(() => {
-    refresh()
-  }, [refresh])
+  const parked = useMemo(
+    () => vehicles.filter((v) => !v.exitTime),
+    [vehicles],
+  )
+
+  const recent = useMemo(
+    () =>
+      vehicles
+        .filter((v) => v.exitTime)
+        .sort(
+          (a, b) =>
+            new Date(b.exitTime ?? '').getTime() -
+            new Date(a.exitTime ?? '').getTime(),
+        )
+        .slice(0, 50),
+    [vehicles],
+  )
+
+  const entryMutation = useMutation({
+    mutationFn: createVehicleEntry,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] })
+    },
+  })
+
+  const exitMutation = useMutation({
+    mutationFn: exitVehicle,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] })
+    },
+  })
 
   const onEntrySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -57,17 +89,12 @@ function DashboardPage() {
       setEntryError('Select an image')
       return
     }
-    setEntryLoading(true)
     try {
-      const formData = new FormData()
-      formData.append('image', input.files[0])
-      await registerVehicleEntry({ data: { data: formData } })
+      const file = input.files[0]
+      await entryMutation.mutateAsync(file)
       form.reset()
-      refresh()
     } catch (err) {
       setEntryError(err instanceof Error ? err.message : 'Entry failed')
-    } finally {
-      setEntryLoading(false)
     }
   }
 
@@ -75,40 +102,29 @@ function DashboardPage() {
     e.preventDefault()
     setExitError('')
     setExitSuccess(null)
-    if (!exitPlate.trim()) {
-      setExitError('Enter license plate')
+    const form = e.currentTarget
+    const input = form.querySelector<HTMLInputElement>('input[type="file"]')
+    if (!input?.files?.length) {
+      setExitError('Select an image')
       return
     }
-    setExitLoading(true)
     try {
-      const result = await processVehicleExit({
-        data: { vehicleNumber: exitPlate.trim() },
-      })
-      setExitSuccess(`Rs. ${result.parkingCost} collected.`)
-      setExitPlate('')
-      refresh()
+      const file = input.files[0]
+      const result = await exitMutation.mutateAsync(file)
+      setExitSuccess(`Rs. ${result.totalAmount ?? '0.00'} collected.`)
+      form.reset()
     } catch (err) {
       setExitError(err instanceof Error ? err.message : 'Exit failed')
-    } finally {
-      setExitLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-          <h1 className="text-sm font-semibold text-foreground">
-            Parking Billing System
-          </h1>
-          <span className="text-xs text-muted-foreground">Demo · dummy data</span>
-        </div>
-      </header>
       <main className="mx-auto max-w-6xl px-4 py-6">
         <div className="mb-6">
           <h2 className="text-lg font-medium text-foreground">Dashboard</h2>
           <p className="text-sm text-muted-foreground">
-            Overview of parking lot status and earnings. Data is dummy until API is integrated.
+            Overview of parking lot status and earnings. 
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -121,7 +137,7 @@ function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-semibold">
-                {stats?.carsParked ?? '—'}
+                {isLoading ? '…' : stats.carsParked}
               </p>
             </CardContent>
           </Card>
@@ -134,7 +150,7 @@ function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-semibold">
-                {stats?.remainingPlaces ?? '—'}
+                {isLoading ? '…' : stats.remainingPlaces}
               </p>
             </CardContent>
           </Card>
@@ -147,9 +163,9 @@ function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-semibold">
-                {stats != null
-                  ? `Rs. ${Number(stats.totalEarnings).toLocaleString()}`
-                  : '—'}
+                {isLoading
+                  ? '…'
+                  : `Rs. ${Number(stats.totalEarnings).toLocaleString()}`}
               </p>
             </CardContent>
           </Card>
@@ -159,12 +175,14 @@ function DashboardPage() {
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Vehicle entry</CardTitle>
-              <CardDescription>Upload plate image to register entry (demo only)</CardDescription>
+              <CardDescription>
+                Upload vehicle image to detect plate and register entry.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={onEntrySubmit} className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="entry-image">Plate image</Label>
+                  <Label htmlFor="entry-image">Entry image</Label>
                   <Input
                     id="entry-image"
                     type="file"
@@ -176,8 +194,12 @@ function DashboardPage() {
                 {entryError && (
                   <p className="text-xs text-destructive">{entryError}</p>
                 )}
-                <Button type="submit" disabled={entryLoading} size="sm">
-                  {entryLoading ? 'Registering…' : 'Register entry'}
+                <Button
+                  type="submit"
+                  disabled={entryMutation.isPending}
+                  size="sm"
+                >
+                  {entryMutation.isPending ? 'Registering…' : 'Register entry'}
                 </Button>
               </form>
             </CardContent>
@@ -185,18 +207,19 @@ function DashboardPage() {
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Vehicle exit</CardTitle>
-              <CardDescription>Enter plate to compute and record exit (demo only)</CardDescription>
+              <CardDescription>
+                Upload vehicle image to detect plate and record exit with billing.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={onExitSubmit} className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="exit-plate">License plate</Label>
+                  <Label htmlFor="exit-image">Exit image</Label>
                   <Input
-                    id="exit-plate"
-                    type="text"
-                    value={exitPlate}
-                    onChange={(e) => setExitPlate(e.target.value)}
-                    placeholder="e.g. नेपाल १२३"
+                    id="exit-image"
+                    type="file"
+                    accept="image/*"
+                    required
                     className="text-xs"
                   />
                 </div>
@@ -206,8 +229,12 @@ function DashboardPage() {
                 {exitSuccess && (
                   <p className="text-xs text-foreground">{exitSuccess}</p>
                 )}
-                <Button type="submit" disabled={exitLoading} size="sm">
-                  {exitLoading ? 'Processing…' : 'Process exit'}
+                <Button
+                  type="submit"
+                  disabled={exitMutation.isPending}
+                  size="sm"
+                >
+                  {exitMutation.isPending ? 'Processing…' : 'Process exit'}
                 </Button>
               </form>
             </CardContent>
@@ -247,7 +274,7 @@ function VehiclesTable({
   rows,
   showExitTime,
 }: {
-  rows: VehicleRow[]
+  rows: Vehicle[]
   showExitTime: boolean
 }) {
   if (rows.length === 0) {
@@ -271,17 +298,17 @@ function VehiclesTable({
         <tbody>
           {rows.map((r) => (
             <tr key={r.id} className="border-b border-border/50">
-              <td className="py-1.5">{r.vehicleNumber}</td>
+              <td className="py-1.5">{r.licensePlate}</td>
               <td className="py-1.5 text-muted-foreground">
-                {formatDate(r.entryTime)}
+                {formatDate(new Date(r.entryTime))}
               </td>
               {showExitTime && (
                 <td className="py-1.5 text-muted-foreground">
-                  {r.exitTime ? formatDate(r.exitTime) : '—'}
+                  {r.exitTime ? formatDate(new Date(r.exitTime)) : '—'}
                 </td>
               )}
               <td className="py-1.5 text-right">
-                Rs. {Number(r.parkingCost).toLocaleString()}
+                Rs. {Number(r.totalAmount ?? 0).toLocaleString()}
               </td>
             </tr>
           ))}

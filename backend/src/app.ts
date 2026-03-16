@@ -1,13 +1,12 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-// import pinoHttp from "pino-http";
+import pinoHttp from "pino-http";
 import { healthRouter } from "./routes/health.js";
-import { taskRouter } from "./routes/tasks.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { globalLimiter } from "./middleware/rate-limit.js";
 import { NotFoundError } from "./lib/errors.js";
-// import { logger } from "./lib/logger.js";
+import { logger } from "./lib/logger.js";
 import { env } from "./config/env.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec, swaggerUiOptions } from "./lib/swagger.js";
@@ -18,10 +17,13 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 app.use(globalLimiter);
-// app.use(pinoHttp({ logger }));
+app.use(pinoHttp({ logger }));
 
 // Routes
 app.get("/", (_req, res) => {
@@ -33,9 +35,8 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/health", healthRouter);
-app.use("/api/tasks", taskRouter);
 app.use("/api/auth", userRouter);
-app.use("/api/vehicle",vehicleRouter)
+app.use("/api/vehicles",vehicleRouter)
 
 // API Documentation
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
