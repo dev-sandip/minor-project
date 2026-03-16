@@ -18,7 +18,7 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: "https://parking-server.thesandip.dev",
+  origin: "https://parking.thesandip.dev",
   credentials: true
 }));
 app.use(express.json());
