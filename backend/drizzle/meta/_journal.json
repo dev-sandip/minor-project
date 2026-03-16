@@ -36,6 +36,27 @@
       "when": 1773603054017,
       "tag": "0004_overjoyed_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773637780869,
+      "tag": "0005_odd_black_panther",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773638137886,
+      "tag": "0006_ancient_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773639173514,
+      "tag": "0007_flimsy_magneto",
+      "breakpoints": true
     }
   ]
 }

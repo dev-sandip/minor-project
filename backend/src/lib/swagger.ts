@@ -39,7 +39,51 @@ const HealthSchema = z.object({
   uptime: z.number().openapi({ example: 123.456 }),
 }).openapi("Health");
 
-// --- Paths ---
+const RegisterSchema = z.object({
+  name:z.string().openapi({example:"Sandip Sapkota"}),
+  email:z.email().openapi({example:"test@thesandip.dev"}),
+  password:z.string().min(8).openapi({example:"test@thesandip.dev"}),
+})
+const LoginSchema = z.object({
+  email:z.email().openapi({example:"test@thesandip.dev"}),
+  password:z.string().min(8).openapi({example:"test@thesandip.dev"}),
+})
+
+registry.registerPath({
+  method: "post",
+  path: "/api/auth/register",
+  summary: "Register User",
+  tags: ["Auth"],
+   request: {
+    body: {
+      content: { "application/json": { schema: RegisterSchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: "User is registered",
+      content: { "application/json": { schema: RegisterSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/auth/login",
+  summary: "Login User",
+  tags: ["Auth"],
+   request: {
+    body: {
+      content: { "application/json": { schema: LoginSchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: "User is logged in",
+      content: { "application/json": { schema: LoginSchema } },
+    },
+  },
+});
 
 registry.registerPath({
   method: "get",

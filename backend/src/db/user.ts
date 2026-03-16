@@ -8,6 +8,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   role: userRoleEnum("role").default("user").notNull(),
+  imageUrl: text("image_url").default("https://api.dicebear.com/7.x/avataaars/svg?seed=default").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

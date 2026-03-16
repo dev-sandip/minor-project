@@ -6,6 +6,7 @@ import PasswordHasher from "../lib/hash";
 import JwtService, { JwtPayload } from "../lib/jwt";
 import { z } from "zod";
 import { omit } from "../lib/utiities";
+import { generateAvatar } from "../lib/avatar";
 
 export const UserLoginSchema = z.object({
     email: z.email(),
@@ -33,10 +34,10 @@ class UserController {
 
             const hashedPassword = await PasswordHasher.hashPassword(password);
 
-
+            const imageUrl = generateAvatar(name);
             const [user] = await db
                 .insert(users)
-                .values({ email, name, password: hashedPassword })
+                .values({ email, name, password: hashedPassword, imageUrl })
                 .returning();
 
             if (!user) {
@@ -101,7 +102,7 @@ class UserController {
             const user = await db.query.users.findFirst({
                 where: eq(users.id, req.user.id),
             });
-
+console.log("User profile accessed:", user);
             if (!user) {
                 return res.status(404).json({ error: "User not found" });
             }
