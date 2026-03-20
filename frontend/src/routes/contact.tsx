@@ -20,7 +20,7 @@ const TEAM = [
     github: 'https://github.com/raghavbot',
   },
   {
-    name: 'Pranik Angdembe Limbu',
+    name: 'Pranika Angdembe Limbu',
     role: 'App Developer(Flutter)',
     image: 'https://api.dicebear.com/9.x/initials/svg?seed=Member%20Three',
     github: 'https://github.com/pranikalimbu',

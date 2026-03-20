@@ -19,6 +19,10 @@ function IndexPage() {
             calculate charges instantly, and keep your parking operations under
             control with a clean, focused dashboard.
           </p>
+          <p className="text-xs md:text-sm text-muted-foreground">
+            Plate detection uses OCR and YOLO models trained on basic images and
+            workflows (no Tesseract).
+          </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link to="/login">

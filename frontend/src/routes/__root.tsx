@@ -18,6 +18,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { Button } from '@/components/ui/button'
 import { fetchProfile, logout } from '@/lib/api/auth'
 import { getCachedToken } from '@/lib/safe-storage'
+import { Car, Camera, LayoutDashboard, Moon, Shield, Sun, Users } from 'lucide-react'
 
 const queryClient = new QueryClient()
 
@@ -122,36 +123,52 @@ function AppHeader() {
   return (
     <header className="border-b border-border bg-card">
       <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4">
-        <div className="flex items-center gap-4 text-xs">
-          <Link to="/" className="font-semibold text-foreground">
-            Parking Billing System
+        <div className="flex items-center gap-6 text-xs">
+          <Link to="/" className="flex items-center gap-2 font-semibold text-foreground">
+            
+            <span className="hidden sm:inline">OCR-YOLO Parking System</span>
           </Link>
-          <Link to="/contact" className="hover:text-foreground">
-                Team
-              </Link>
+          <Link
+            to="/contact"
+            className="flex items-center gap-2 hover:text-foreground"
+          >
+            <Users className="size-4" />
+            <span className="hidden sm:inline">Team</span>
+          </Link>
           {user && (
             <nav className="hidden md:flex items-center gap-3 text-muted-foreground">
-              <Link to="/dashboard" className="hover:text-foreground">
-                Dashboard
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 hover:text-foreground"
+              >
+                <LayoutDashboard className="size-4" />
+                <span>Dashboard</span>
               </Link>
-              <Link to="/vehicles" className="hover:text-foreground">
-                Vehicles
+              <Link to="/vehicles" className="flex items-center gap-2 hover:text-foreground">
+                <Car className="size-4" />
+                <span>Vehicles</span>
               </Link>
-              <Link to="/simulation" className="hover:text-foreground">
-                Simulation
+              <Link
+                to="/simulation"
+                className="flex items-center gap-2 hover:text-foreground"
+              >
+                <Camera className="size-4" />
+                <span>Simulation</span>
               </Link>
               
             </nav>
           )}
         </div>
         <div className="flex items-center gap-3 text-xs">
-          <button
+          <Button
             type="button"
+            size="icon-xs"
+            variant="outline"
+            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="text-muted-foreground hover:text-foreground"
           >
-            {isDark ? 'Light mode' : 'Dark mode'}
-          </button>
+            {isDark ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+          </Button>
           {user ? (
             <div className="flex items-center gap-2">
               <img
