@@ -16,13 +16,13 @@ const TEAM = [
   {
     name: 'Raghav Upadhyay',
     role: 'Machine Learning Engineer',
-    image: 'http://github.com/raghavbot.png',
+    image: 'https://ik.imagekit.io/vsthqhvci/headshots/pp-raghav.jpeg',
     github: 'https://github.com/raghavbot',
   },
   {
     name: 'Pranika Angdembe Limbu',
     role: 'App Developer(Flutter)',
-    image: 'https://api.dicebear.com/9.x/initials/svg?seed=Member%20Three',
+    image: 'https://ik.imagekit.io/vsthqhvci/headshots/658862911_1901677273874825_8044099731445620792_n.jpg',
     github: 'https://github.com/pranikalimbu',
   },
   {

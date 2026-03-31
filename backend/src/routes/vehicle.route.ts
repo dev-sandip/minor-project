@@ -6,6 +6,6 @@ const vehicleRouter = Router();
 
 vehicleRouter.post("/entry",authMiddleware,requireRole("admin"),uploadSingle,vehicleController.vehicleEntry);
 vehicleRouter.post("/exit",authMiddleware,requireRole("admin"),uploadSingle,vehicleController.vehicleExit);
-vehicleRouter.get("/",authMiddleware,requireRole("admin"),vehicleController.getAllVehicles);
-vehicleRouter.get("/:id",authMiddleware,requireRole("admin"),vehicleController.getVehicleById);
+vehicleRouter.get("/",vehicleController.getAllVehicles);
+vehicleRouter.get("/:id",vehicleController.getVehicleById);
 export default vehicleRouter;

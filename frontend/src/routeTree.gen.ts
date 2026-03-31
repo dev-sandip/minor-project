@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VehiclesRouteImport } from './routes/vehicles'
 import { Route as SimulationRouteImport } from './routes/simulation'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DisplayRouteImport } from './routes/display'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ const SimulationRoute = SimulationRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisplayRoute = DisplayRouteImport.update({
+  id: '/display',
+  path: '/display',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/display': typeof DisplayRoute
   '/login': typeof LoginRoute
   '/simulation': typeof SimulationRoute
   '/vehicles': typeof VehiclesRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/display': typeof DisplayRoute
   '/login': typeof LoginRoute
   '/simulation': typeof SimulationRoute
   '/vehicles': typeof VehiclesRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/display': typeof DisplayRoute
   '/login': typeof LoginRoute
   '/simulation': typeof SimulationRoute
   '/vehicles': typeof VehiclesRoute
@@ -78,16 +87,25 @@ export interface FileRouteTypes {
     | '/'
     | '/contact'
     | '/dashboard'
+    | '/display'
     | '/login'
     | '/simulation'
     | '/vehicles'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contact' | '/dashboard' | '/login' | '/simulation' | '/vehicles'
+  to:
+    | '/'
+    | '/contact'
+    | '/dashboard'
+    | '/display'
+    | '/login'
+    | '/simulation'
+    | '/vehicles'
   id:
     | '__root__'
     | '/'
     | '/contact'
     | '/dashboard'
+    | '/display'
     | '/login'
     | '/simulation'
     | '/vehicles'
@@ -97,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
+  DisplayRoute: typeof DisplayRoute
   LoginRoute: typeof LoginRoute
   SimulationRoute: typeof SimulationRoute
   VehiclesRoute: typeof VehiclesRoute
@@ -123,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/display': {
+      id: '/display'
+      path: '/display'
+      fullPath: '/display'
+      preLoaderRoute: typeof DisplayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -153,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
+  DisplayRoute: DisplayRoute,
   LoginRoute: LoginRoute,
   SimulationRoute: SimulationRoute,
   VehiclesRoute: VehiclesRoute,

@@ -7,6 +7,7 @@ import { db } from "../db";
 import { vehicles } from "../db/vehicle";
 import { eq, and, isNull, isNotNull } from "drizzle-orm";
 import billingLogic from "../lib/billingLogic";
+import { vehicleEventBus } from "./vehicle.event.controller";
 
 class VehicleController {
   public async vehicleEntry(req: Request, res: Response): Promise<Response> {
@@ -24,7 +25,7 @@ class VehicleController {
         uploadImage({ file: file.buffer, fileName: file.originalname, folder: "/vehicle-entries" }),
       ]);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unexpected error";
+      const message = "Error extracting license plate!";
       return res.status(502).json({ error: message });
     }
 
@@ -51,6 +52,9 @@ class VehicleController {
       imageKey: uploaded.fileId,
       confidence: extracted.confidence,
     }).returning();
+
+    // Push live update to SSE consumers (works even if DB trigger isn't installed)
+    vehicleEventBus.emit("vehicle", newVehicle);
 
     return res.status(201).json({
       message: "Vehicle entry recorded successfully!",
@@ -129,6 +133,9 @@ class VehicleController {
         message: "Another exit was recorded simultaneously for this vehicle",
       });
     }
+
+    // Push live update to SSE consumers (works even if DB trigger isn't installed)
+    vehicleEventBus.emit("vehicle", updatedVehicle);
 
     return res.status(200).json({
       message: "Vehicle exit recorded successfully!",

@@ -5,6 +5,7 @@ import {
   Link,
   createRootRoute,
   useNavigate,
+  useRouterState,
 } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
@@ -15,6 +16,7 @@ import { getThemeServerFn } from '@/lib/theme'
 import { ThemeProvider } from '@/components/theme'
 import { useTheme } from '@/components/theme/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
+import HotToaster from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { fetchProfile, logout } from '@/lib/api/auth'
 import { getCachedToken } from '@/lib/safe-storage'
@@ -72,6 +74,8 @@ function RootLayout() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   const theme = Route.useLoaderData()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const hideHeader = pathname === '/display'
   return (
     <html className={theme} lang="en" suppressHydrationWarning>
       <head>
@@ -80,9 +84,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <ThemeProvider theme={theme}>
         <body>
           <QueryClientProvider client={queryClient}>
-            <AppHeader />
+            {!hideHeader && <AppHeader />}
             {children}
             <Toaster richColors />
+            <HotToaster
+              position="top-right"
+              toastOptions={{
+                duration: 5000,
+              }}
+            />
             <TanStackDevtools
               config={{
                 position: 'bottom-right',

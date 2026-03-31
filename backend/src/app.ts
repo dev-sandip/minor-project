@@ -12,15 +12,18 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec, swaggerUiOptions } from "./lib/swagger.js";
 import { userRouter } from "./routes/user.route.js";
 import vehicleRouter from "./routes/vehicle.route.js";
+import { vehicleStreamRouter } from "./routes/vehicle.stream.route.js";
 
 const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors({
-  origin: "https://parking.thesandip.dev",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: ["https://parking.thesandip.dev", "http://localhost:3000"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(globalLimiter);
 app.use(pinoHttp({ logger }));
@@ -33,13 +36,17 @@ app.get("/", (_req, res) => {
     environment: env.NODE_ENV,
   });
 });
-
+app.use("/api/vehicles/stream", vehicleStreamRouter);
 app.use("/health", healthRouter);
 app.use("/api/auth", userRouter);
-app.use("/api/vehicles",vehicleRouter)
+app.use("/api/vehicles", vehicleRouter);
 
 // API Documentation
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+app.use(
+  "/api/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, swaggerUiOptions)
+);
 app.get("/api/docs.json", (_req, res) => {
   res.json(swaggerSpec);
 });
