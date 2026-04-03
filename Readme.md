@@ -1,4 +1,4 @@
-# Parking Billing
+# Intelligent parking billing system using YOLO and OCR
 
 Minor project: a **Intelligent parking billing system using YOLO and OCR** system with a **React** web app and an **Express** API. The backend handles vehicles, billing logic, auth (JWT), and optional real-time vehicle streaming; the frontend is a TanStack Router / Vite app that talks to the API over HTTP.
 
@@ -123,6 +123,10 @@ Backend `package.json` specifies **MIT** (see `backend/package.json`).
 
 ## Author
 **Pranika Angdembe Limbu**
+
 **Raghav Upadhyay**
+
 **Sandip Sapkota**
+
 **Sulav Paudel**
+
